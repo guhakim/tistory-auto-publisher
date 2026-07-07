@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>티스토리 자동 발행 도구</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #F1EEE4;
+    --paper-panel: #E9E5D8;
+    --ink: #1C1B18;
+    --ink-soft: #55524A;
+    --ink-faint: #8C887C;
+    --amber: #B4740E;
+    --amber-soft: #EADCC0;
+    --line: #C9C3AF;
+    --line-strong: #1C1B18;
+    --danger: #A3372B;
+    --ok: #3B6D11;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Noto Sans KR', -apple-system, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    margin: 0;
+    padding: 40px 20px;
+    font-size: 18px;
+  }
+  .wrap { max-width: 820px; margin: 0 auto; }
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 15px;
+    letter-spacing: 0.12em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    margin: 0 0 6px;
+  }
+  h1 { font-size: 30px; margin: 0 0 24px; letter-spacing: -0.01em; }
+  .status-bar {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    background: var(--paper-panel);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 14px 18px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 16px;
+    color: var(--ink-soft);
+    margin-bottom: 28px;
+  }
+  .status-bar b { color: var(--ink); }
+  .status-bar .warn { color: var(--danger); }
+  label { font-size: 16px; font-weight: 500; color: var(--ink-soft); display: block; margin: 0 0 8px; }
+  input[type=text], select {
+    width: 100%;
+    background: #FBFAF5;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 13px 14px;
+    font-size: 18px;
+    color: var(--ink);
+    margin-bottom: 20px;
+    font-family: 'Noto Sans KR', sans-serif;
+  }
+  input[type=text]:focus, select:focus { outline: none; border-color: var(--amber); }
+  .checkbox-row { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; font-size: 17px; color: var(--ink-soft); }
+  .checkbox-row input[type=checkbox] { width: 18px; height: 18px; }
+  .btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 16px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    border-radius: 3px;
+    padding: 14px 24px;
+    cursor: pointer;
+  }
+  .btn:disabled { background: var(--ink-faint); cursor: default; }
+  .note { font-size: 16px; color: var(--ink-faint); margin-top: 12px; line-height: 1.6; }
+  .result { margin-top: 32px; }
+  .result-box {
+    border: 1px solid var(--line-strong);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 16px;
+  }
+  .result-head {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 12px 16px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 17px;
+    letter-spacing: 0.06em;
+  }
+  .result-body { padding: 20px; font-size: 17px; line-height: 1.8; color: var(--ink-soft); }
+  .result-body h2 { font-size: 19px; color: var(--ink); margin: 20px 0 8px; }
+  .result-body h2:first-child { margin-top: 0; }
+  .tag-chip {
+    display: inline-block;
+    background: var(--amber-soft);
+    color: var(--amber);
+    font-size: 16px;
+    padding: 5px 11px;
+    border-radius: 3px;
+    border: 1px solid var(--amber);
+    margin: 3px 5px 3px 0;
+  }
+  .error-box {
+    border: 1px solid var(--danger);
+    background: #FBEDEA;
+    color: var(--danger);
+    border-radius: 4px;
+    padding: 14px 16px;
+    font-size: 17px;
+    margin-top: 16px;
+    white-space: pre-wrap;
+  }
+  .success-box {
+    border: 1px solid var(--ok);
+    background: #EEF5E6;
+    color: var(--ok);
+    border-radius: 4px;
+    padding: 14px 16px;
+    font-size: 17px;
+    margin-top: 16px;
+  }
+  .success-box a { color: var(--ok); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">tistory · auto publisher</p>
+  <h1>참고 URL → 주제별 글 자동 생성·발행</h1>
+
+  <div class="status-bar" id="status-bar">상태 확인 중...</div>
+
+  <label for="blog">블로그</label>
+  <select id="blog"></select>
+
+  <label for="category">주제 (카테고리)</label>
+  <select id="category"></select>
+
+  <label for="url">참고 사이트 URL (상품 페이지, 맛집/장소 정보 등)</label>
+  <input type="text" id="url" placeholder="https://example.com/product-page" />
+
+  <label for="product">주제/상품명 (선택, URL 없이도 사용 가능)</label>
+  <input type="text" id="product" placeholder="예: BOOX Palma 2 / 을지로 냉면집 / 강릉 2박3일 코스" />
+
+  <div class="checkbox-row">
+    <input type="checkbox" id="dryRun" />
+    <label for="dryRun" style="margin:0">미리보기만 생성 (발행하지 않음)</label>
+  </div>
+
+  <button class="btn" id="run-btn">실행</button>
+  <p class="note" id="run-note"></p>
+
+  <div class="result" id="result"></div>
+</div>
+
+<script>
+  const statusBar = document.getElementById('status-bar');
+  const runBtn = document.getElementById('run-btn');
+  const runNote = document.getElementById('run-note');
+  const resultEl = document.getElementById('result');
+
+  async function loadStatus() {
+    const blogKey = document.getElementById('blog').value;
+    const res = await fetch('/api/status?blog=' + encodeURIComponent(blogKey));
+    const s = await res.json();
+    if (!s.loggedIn) {
+      statusBar.innerHTML = '<span class="warn">⚠ 로그인 세션 없음 — 터미널에서 "npm run login"을 먼저 실행하세요.</span>';
+    } else {
+      statusBar.innerHTML =
+        '블로그: <b>' + s.blogName + '</b> · 오늘 발행: <b>' + s.todayCount + ' / ' + s.dailyLimit + '</b>';
+    }
+    return s;
+  }
+
+  async function loadCategories() {
+    const res = await fetch('/api/categories');
+    const { categories, defaultKey } = await res.json();
+    const select = document.getElementById('category');
+    select.innerHTML = categories
+      .map((c) => '<option value="' + c.key + '"' + (c.key === defaultKey ? ' selected' : '') + '>' + escapeHtml(c.label) + '</option>')
+      .join('');
+  }
+
+  async function loadBlogs() {
+    const res = await fetch('/api/blogs');
+    const { blogs, defaultKey } = await res.json();
+    const select = document.getElementById('blog');
+    select.innerHTML = blogs
+      .map((b) => '<option value="' + b.key + '"' + (b.key === defaultKey ? ' selected' : '') + '>' + escapeHtml(b.label) + '</option>')
+      .join('');
+    select.addEventListener('change', loadStatus);
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str == null ? '' : String(str);
+    return div.innerHTML;
+  }
+
+  runBtn.addEventListener('click', async () => {
+    const url = document.getElementById('url').value.trim();
+    const product = document.getElementById('product').value.trim();
+    const categoryKey = document.getElementById('category').value;
+    const blogKey = document.getElementById('blog').value;
+    const dryRun = document.getElementById('dryRun').checked;
+
+    if (!url && !product) {
+      runNote.textContent = 'URL 또는 상품명 중 하나는 입력해야 합니다.';
+      return;
+    }
+
+    runBtn.disabled = true;
+    resultEl.innerHTML = '';
+    runNote.textContent = dryRun ? '리서치·생성 중...' : '리서치·생성 후 실제 발행까지 진행합니다...';
+
+    try {
+      const res = await fetch('/api/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url, product, categoryKey, blogKey, dryRun }),
+      });
+      const data = await res.json();
+      renderResult(data);
+    } catch (err) {
+      resultEl.innerHTML = '<div class="error-box">요청 실패: ' + escapeHtml(err.message) + '</div>';
+    } finally {
+      runBtn.disabled = false;
+      runNote.textContent = '';
+      loadStatus();
+    }
+  });
+
+  function renderResult(data) {
+    let html = '';
+
+    if (!data.ok) {
+      if (data.stage === 'quality_gate') {
+        html += '<div class="error-box">품질 게이트 실패 (발행 안 함):\n- ' + data.problems.map(escapeHtml).join('\n- ') + '</div>';
+      } else if (data.stage === 'rate_limit') {
+        html += '<div class="error-box">오늘 발행 한도(' + data.dailyLimit + '건)를 이미 채웠습니다. 내일 다시 시도하세요.</div>';
+      } else {
+        html += '<div class="error-box">' + escapeHtml(data.error || '알 수 없는 오류') + '</div>';
+      }
+    } else if (data.dryRun) {
+      html += '<div class="success-box">미리보기 생성 완료 (발행하지 않음)</div>';
+    } else {
+      html += '<div class="success-box">발행 완료: <a href="' + data.publishedUrl + '" target="_blank">' + escapeHtml(data.publishedUrl) + '</a></div>';
+    }
+
+    if (data.title) {
+      html += '<div class="result-box">';
+      html += '<div class="result-head">' + escapeHtml(data.title) + '</div>';
+      html += '<div class="result-body">';
+      if (data.draft && data.draft.tags) {
+        html += data.draft.tags.map((t) => '<span class="tag-chip">' + escapeHtml(t) + '</span>').join('');
+      }
+      html += data.contentHtml || '';
+      html += '</div></div>';
+    }
+
+    resultEl.innerHTML = html;
+  }
+
+  loadBlogs().then(loadStatus);
+  loadCategories();
+</script>
+</body>
+</html>

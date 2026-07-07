@@ -1,0 +1,23 @@
+{
+  "name": "tistory-auto-publisher",
+  "version": "0.1.0",
+  "private": true,
+  "description": "URL/주제를 리서치해 카테고리별 스타일에 맞는 글을 생성하고, 여러 티스토리 블로그에 자동 발행하는 도구",
+  "type": "module",
+  "bin": {
+    "tistory-login": "./src/tistoryLogin.js",
+    "generate-and-publish": "./bin/generate-and-publish.js"
+  },
+  "scripts": {
+    "login": "node src/tistoryLogin.js",
+    "publish": "node bin/generate-and-publish.js",
+    "web": "node server.js",
+    "codegen": "playwright codegen --load-storage=.state/storageState.json https://felpen.tistory.com/manage/newpost/"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "playwright": "^1.47.0"
+  }
+}
