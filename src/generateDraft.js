@@ -26,12 +26,20 @@ function buildSystemPrompt(category) {
 The current post's category is "${category.label}". Writing style for this category: ${category.styleGuide}
 
 Given the topic and any reference material provided, search the web to confirm real, current facts (prices, hours, locations, specs, etc. as relevant to the topic).
+
+Before writing "tags", use the google_search tool to look up what people are actually searching for
+right now about this topic — check Google Trends (trends.google.com) related/rising queries for the
+topic, and the "연관검색어" (related search terms) shown on Korean search results for the topic.
+Base the tags list on those real, currently-observed search terms rather than inventing plausible-sounding
+keywords. If you cannot find real trend data for a very narrow topic, fall back to the closest broader
+trending queries you did find, and note that in your search reasoning (not in the output).
+
 Then respond with ONLY a single valid JSON object (no markdown fences, no preamble, no explanation text) matching exactly this schema:
 {
   "topic": string,
   "title": string (Korean, SEO-friendly blog post title including the core keyword, natural, not clickbait),
   "meta_description": string (Korean, 1 sentence, under 120 characters),
-  "tags": [string, ...] (5-8 Korean longtail keywords readers would search),
+  "tags": [string, ...] (exactly 15 Korean search terms, sourced from real Google Trends / related-search data as instructed above, ordered from most to least frequently searched),
 ${buildSchemaFields(category)}
 }
 Keep every string field concise (1-4 sentences unless noted). All Korean text should sound natural for a Korean blog reader.
