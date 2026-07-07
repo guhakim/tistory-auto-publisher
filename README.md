@@ -4,7 +4,7 @@
 원하는 티스토리 블로그에 실제 공개 발행까지 한 번에 처리하는 개인용 자동화 도구.
 
 - **리서치**: 참고 URL 본문 스크래핑 + Gemini의 `google_search` 그라운딩으로 실제 정보 확인
-- **카테고리별 완전히 다른 글 구조**: 테크 리뷰 / 맛집 / 여행 / 생활정보 — 각기 다른 섹션 구성과 문체
+- **카테고리별 완전히 다른 글 구조**: 테크 리뷰 / 맛집 / 여행 / 요리 레시피 / 생활정보 — 각기 다른 섹션 구성과 문체
 - **여러 블로그 지원**: 같은 티스토리(카카오) 계정 아래 있는 블로그 여러 개 중 선택해 발행
 - **발행 자동화**: Playwright로 실제 로그인 세션을 재사용해 티스토리 웹 에디터를 직접 조작 (Open API는 종료됨, 아래 참고)
 
@@ -102,7 +102,7 @@ node bin/generate-and-publish.js --product "을지로 냉면집" --category food
 |---|---|
 | `--url` | 참고 사이트 URL (상품 페이지, 맛집/장소 정보 등) |
 | `--product` | `--url` 없이 주제/상품명만으로 리서치 (Gemini의 `google_search`로 보완) |
-| `--category` | `tech` \| `food` \| `travel` \| `lifeTips` (기본값 `tech`) |
+| `--category` | `tech` \| `food` \| `travel` \| `recipe` \| `lifeTips` (기본값 `tech`) |
 | `--blog` | `src/blogs.js`에 정의된 블로그 키 (기본값은 `DEFAULT_BLOG_KEY`) |
 | `--dry-run` | 발행하지 않고 생성 결과만 출력 |
 | `--debug` | 브라우저 창을 띄우고 느리게 실행해 실패 단계를 눈으로 확인 |

@@ -54,6 +54,23 @@ export const CATEGORIES = {
       { key: 'conclusion', label: '총평', kind: 'text' },
     ],
   },
+  recipe: {
+    label: '요리 레시피',
+    tistoryCategory: '요리레시피',
+    styleGuide:
+      '요리 초보자도 그대로 따라 할 수 있게 순서를 명확히 나눠서 설명한다. 재료는 반드시 구체적인 ' +
+      '계량(g, ml, 큰술/작은술, 개수 등)을 함께 적는다. 조리 과정은 한 단계에 한 가지 동작만 담아 ' +
+      '건너뛰기 쉬운 디테일(불 세기, 시간, 색·향 변화로 상태 확인하는 법)을 놓치지 않는다. ' +
+      '실패하기 쉬운 지점은 팁으로 따로 짚어준다.',
+    sections: [
+      { key: 'intro', label: '요리 소개', kind: 'text' },
+      { key: 'ingredients', label: '재료 (계량 포함)', kind: 'list', minItems: 4, itemHint: '정확한 계량을 포함한 재료 한 줄 (Korean)' },
+      { key: 'steps', label: '만드는 과정', kind: 'pairs', minItems: 4, titleField: 'step', descField: 'detail' },
+      { key: 'tips', label: '실패하지 않는 팁', kind: 'list', minItems: 2, itemHint: '구체적인 조리 팁 (Korean)' },
+      { key: 'storage', label: '보관·활용 방법', kind: 'text' },
+      { key: 'conclusion', label: '마무리', kind: 'text' },
+    ],
+  },
   lifeTips: {
     label: '생활정보',
     tistoryCategory: '생활정보',
