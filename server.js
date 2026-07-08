@@ -7,6 +7,7 @@ import { peekTodayCount } from './src/rateLimiter.js';
 import { runPipeline } from './src/runPipeline.js';
 import { CATEGORIES, DEFAULT_CATEGORY_KEY } from './src/categories.js';
 import { BLOGS, DEFAULT_BLOG_KEY, getBlog } from './src/blogs.js';
+import { startLogin, getLoginStatus } from './src/loginFlow.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 4321;
@@ -34,6 +35,15 @@ app.get('/api/categories', (req, res) => {
 app.get('/api/blogs', (req, res) => {
   const blogs = Object.entries(BLOGS).map(([key, b]) => ({ key, label: b.label }));
   res.json({ blogs, defaultKey: DEFAULT_BLOG_KEY });
+});
+
+app.post('/api/login/start', async (req, res) => {
+  const result = await startLogin();
+  res.json(result);
+});
+
+app.get('/api/login/status', (req, res) => {
+  res.json(getLoginStatus());
 });
 
 app.post('/api/run', async (req, res) => {

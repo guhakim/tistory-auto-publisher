@@ -140,6 +140,8 @@
   <h1>참고 URL → 주제별 글 자동 생성·발행</h1>
 
   <div class="status-bar" id="status-bar">상태 확인 중...</div>
+  <button class="btn" id="login-btn" style="display:none; margin-bottom:24px;">티스토리 로그인</button>
+  <p class="note" id="login-note" style="display:none;"></p>
 
   <label for="blog">블로그</label>
   <select id="blog"></select>
@@ -169,19 +171,80 @@
   const runBtn = document.getElementById('run-btn');
   const runNote = document.getElementById('run-note');
   const resultEl = document.getElementById('result');
+  const loginBtn = document.getElementById('login-btn');
+  const loginNote = document.getElementById('login-note');
+  let loginPollTimer = null;
+
+  function vncUrl() {
+    const loc = window.location;
+    if (loc.port) {
+      return loc.protocol + '//' + loc.hostname + ':6080/';
+    }
+    return loc.protocol + '//' + loc.host.replace(/-\d+(\.|$)/, '-6080$1') + '/';
+  }
 
   async function loadStatus() {
     const blogKey = document.getElementById('blog').value;
     const res = await fetch('/api/status?blog=' + encodeURIComponent(blogKey));
     const s = await res.json();
     if (!s.loggedIn) {
-      statusBar.innerHTML = '<span class="warn">⚠ 로그인 세션 없음 — 터미널에서 "npm run login"을 먼저 실행하세요.</span>';
+      statusBar.innerHTML = '<span class="warn">⚠ 로그인 세션 없음 — 아래 "티스토리 로그인" 버튼을 눌러주세요.</span>';
+      loginBtn.style.display = 'inline-block';
     } else {
       statusBar.innerHTML =
         '블로그: <b>' + s.blogName + '</b> · 오늘 발행: <b>' + s.todayCount + ' / ' + s.dailyLimit + '</b>';
+      loginBtn.style.display = 'none';
+      loginNote.style.display = 'none';
     }
     return s;
   }
+
+  function stopLoginPoll() {
+    if (loginPollTimer) {
+      clearInterval(loginPollTimer);
+      loginPollTimer = null;
+    }
+  }
+
+  function pollLoginStatus() {
+    stopLoginPoll();
+    loginPollTimer = setInterval(async () => {
+      const res = await fetch('/api/login/status');
+      const s = await res.json();
+      if (s.status === 'waiting' || s.status === 'starting') {
+        loginNote.textContent = '로그인 창에서 카카오 계정으로 로그인해주세요. 완료되면 자동으로 감지됩니다...';
+      } else if (s.status === 'success' || s.loggedIn) {
+        loginNote.textContent = '로그인 완료!';
+        stopLoginPoll();
+        loadStatus();
+      } else if (s.status === 'timeout' || s.status === 'error') {
+        loginNote.textContent = '로그인 실패: ' + (s.message || '다시 시도해주세요.');
+        stopLoginPoll();
+      }
+    }, 3000);
+  }
+
+  loginBtn.addEventListener('click', async () => {
+    loginBtn.disabled = true;
+    loginNote.style.display = 'block';
+    loginNote.textContent = '로그인 화면 준비 중...';
+    try {
+      await fetch('/api/login/start', { method: 'POST' });
+      const w = 620, h = 760;
+      const left = window.screenX + (window.outerWidth - w) / 2;
+      const top = window.screenY + (window.outerHeight - h) / 2;
+      window.open(
+        vncUrl(),
+        'tistory-login',
+        `width=${w},height=${h},left=${left},top=${top},toolbar=no,menubar=no,location=no,status=no,scrollbars=no,resizable=no`,
+      );
+      pollLoginStatus();
+    } catch (err) {
+      loginNote.textContent = '로그인 시작 실패: ' + err.message;
+    } finally {
+      loginBtn.disabled = false;
+    }
+  });
 
   async function loadCategories() {
     const res = await fetch('/api/categories');
