@@ -68,7 +68,7 @@ export async function generateDraft({ apiKey, productHint, reference, categoryKe
     .filter(Boolean)
     .join('\n\n');
 
-  const MAX_ATTEMPTS = 3;
+  const MAX_ATTEMPTS = 5;
   let data;
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
@@ -97,7 +97,7 @@ export async function generateDraft({ apiKey, productHint, reference, categoryKe
       );
     }
 
-    await new Promise((r) => setTimeout(r, attempt * 2000));
+    await new Promise((r) => setTimeout(r, 2 ** attempt * 1000));
   }
 
   const parts = data?.candidates?.[0]?.content?.parts || [];
