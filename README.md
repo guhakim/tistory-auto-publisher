@@ -1,5 +1,7 @@
 # tistory-auto-publisher
 
+**웹 UI 링크**: https://organic-tribble-v4xvqpr799p269pv-4321.app.github.dev (Codespace 실행 중일 때만 유효, 비밀번호는 별도 전달)
+
 주제(URL 또는 상품명/키워드)를 입력하면 리서치 → 카테고리별 스타일에 맞는 글 생성 → 품질 검증 →
 원하는 티스토리 블로그에 실제 공개 발행까지 한 번에 처리하는 개인용 자동화 도구.
 
