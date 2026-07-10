@@ -88,6 +88,19 @@ npm run web
 
 상단 상태 표시줄에 로그인 여부와 선택한 블로그의 오늘 발행 수가 표시된다.
 
+### 외부에 공유하기 (Codespaces)
+
+`.env`에 `WEB_SHARE_USER`/`WEB_SHARE_PASSWORD`를 둘 다 설정하면 웹 UI에 Basic Auth가 걸리고,
+GitHub Codespaces의 포트를 public으로 돌려 외부에서 접속할 수 있다.
+
+```bash
+gh codespace ports visibility 4321:public -c <codespace-name>
+```
+
+현재 공유 중인 링크 (Codespace가 켜져 있을 때만 유효, 비밀번호는 별도 전달):
+
+https://organic-tribble-v4xvqpr799p269pv-4321.app.github.dev
+
 ### CLI (대안)
 
 ```bash
