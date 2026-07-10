@@ -16,6 +16,9 @@ export const config = {
   geminiApiKey: requireEnv('GEMINI_API_KEY'),
   tistoryBlogName: process.env.TISTORY_BLOG_NAME || 'felpen',
   dailyPublishLimit: Number(process.env.DAILY_PUBLISH_LIMIT || 5),
+  webAuth: process.env.WEB_SHARE_USER && process.env.WEB_SHARE_PASSWORD
+    ? { user: process.env.WEB_SHARE_USER, password: process.env.WEB_SHARE_PASSWORD }
+    : null,
   paths: {
     root: projectRoot,
     stateDir: path.join(projectRoot, '.state'),

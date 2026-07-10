@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import crypto from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import express from 'express';
@@ -13,6 +14,37 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 4321;
 
 const app = express();
+
+function timingSafeEqual(a, b) {
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  if (bufA.length !== bufB.length) return false;
+  return crypto.timingSafeEqual(bufA, bufB);
+}
+
+if (config.webAuth) {
+  app.use((req, res, next) => {
+    const header = req.headers.authorization || '';
+    const [scheme, encoded] = header.split(' ');
+    if (scheme === 'Basic' && encoded) {
+      const [user, password] = Buffer.from(encoded, 'base64').toString().split(':');
+      if (
+        user && password &&
+        timingSafeEqual(user, config.webAuth.user) &&
+        timingSafeEqual(password, config.webAuth.password)
+      ) {
+        return next();
+      }
+    }
+    res.set('WWW-Authenticate', 'Basic realm="tistory-auto-publisher"');
+    res.status(401).send('인증이 필요합니다.');
+  });
+} else {
+  console.warn(
+    '경고: WEB_SHARE_USER / WEB_SHARE_PASSWORD가 설정되지 않아 웹 UI가 인증 없이 열려 있습니다. 외부에 공유하지 마세요.'
+  );
+}
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
