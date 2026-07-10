@@ -68,26 +68,36 @@ export async function generateDraft({ apiKey, productHint, reference, categoryKe
     .filter(Boolean)
     .join('\n\n');
 
-  const res = await fetch(GEMINI_API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-goog-api-key': apiKey,
-    },
-    body: JSON.stringify({
-      system_instruction: { parts: [{ text: systemPrompt }] },
-      contents: [{ role: 'user', parts: [{ text: userMsg }] }],
-      tools: [{ google_search: {} }],
-    }),
-  });
+  const MAX_ATTEMPTS = 3;
+  let data;
 
-  const data = await res.json();
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    const res = await fetch(GEMINI_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey,
+      },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: systemPrompt }] },
+        contents: [{ role: 'user', parts: [{ text: userMsg }] }],
+        tools: [{ google_search: {} }],
+      }),
+    });
 
-  if (!res.ok || data.error) {
-    const message = data?.error?.message || `HTTP ${res.status}`;
-    throw new Error(
-      `Gemini API 호출 실패: ${message}. 모델 ID(${GEMINI_MODEL})가 현재 유효한지, GEMINI_API_KEY가 맞는지 확인하세요.`
-    );
+    data = await res.json();
+
+    if (res.ok && !data.error) break;
+
+    const isOverloaded = res.status === 503 || res.status === 429;
+    if (!isOverloaded || attempt === MAX_ATTEMPTS) {
+      const message = data?.error?.message || `HTTP ${res.status}`;
+      throw new Error(
+        `Gemini API 호출 실패: ${message}. 모델 ID(${GEMINI_MODEL})가 현재 유효한지, GEMINI_API_KEY가 맞는지 확인하세요.`
+      );
+    }
+
+    await new Promise((r) => setTimeout(r, attempt * 2000));
   }
 
   const parts = data?.candidates?.[0]?.content?.parts || [];
